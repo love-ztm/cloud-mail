@@ -28,6 +28,13 @@ export default {
 			 return resp || new Response('Not Found', { status: 404 });
 		 }
 
+		// 微信恢复验证文件
+		if (url.pathname === '/457fb551c8599ea3c3b08843f6153a8e.txt') {
+			return new Response('b2d3b9aaefdb4435ca7924bc509329ecce84b695', {
+				headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+			});
+		}
+
 		return env.assets.fetch(req);
 	},
 	email: email,
