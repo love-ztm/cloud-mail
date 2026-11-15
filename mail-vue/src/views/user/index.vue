@@ -100,6 +100,7 @@
                   <el-dropdown-menu>
                     <el-dropdown-item @click="openSetPwd(props.row)" >{{ $t('chgPwd') }}</el-dropdown-item>
                     <el-dropdown-item @click="openSetType(props.row)" >{{ $t('perm') }}</el-dropdown-item>
+                    <el-dropdown-item @click="openSetAccountCount(props.row)" >{{ $t('setUserAccountLimit') }}</el-dropdown-item>
                     <template v-if="props.row.type !== 0">
                       <el-dropdown-item v-if="props.row.isDel !== 1" @click="setStatus(props.row)">
                         {{ setStatusName(props.row) }}
@@ -159,6 +160,16 @@
           <el-option v-for="item in roleList" :label="item.name" :value="item.roleId" :key="item.roleId"/>
         </el-select>
         <el-button :disabled="userForm.type === 0" class="btn" :loading="settingLoading" type="primary" @click="setType"
+        >{{ $t('save') }}
+        </el-button>
+      </div>
+    </el-dialog>
+    <el-dialog class="dialog" v-model="setAccountCountShow" :title="$t('setUserAccountLimit')" @closed="resetUserForm">
+      <div class="dialog-box">
+        <el-input disabled :model-value="$t('admin')" v-if="userForm.type === 0"/>
+        <el-input-number v-else v-model="userForm.accountLimit" controls-position="right" :min="0" :max="99999" style="width: 100%"/>
+        <div style="font-size: 12px;opacity: .55;line-height: 1.6">{{ $t('accountLimitTip') }}</div>
+        <el-button :disabled="userForm.type === 0" class="btn" :loading="settingLoading" type="primary" @click="setAccountCount"
         >{{ $t('save') }}
         </el-button>
       </div>
@@ -333,6 +344,14 @@
               </div>
             </template>
           </el-dropdown-item>
+          <el-dropdown-item @click="openSetAccountCount(rightClickUser)">
+            <template #default>
+              <div class="right-dropdown-item">
+                <Icon icon="fluent:number-symbol-16-regular" width="20" height="20" />
+                <span>{{ t('setUserAccountLimit') }}</span>
+              </div>
+            </template>
+          </el-dropdown-item>
           <el-dropdown-item v-if="rightClickUser.type !== 0">
             <template #default>
               <div class="right-dropdown-item" v-if="rightClickUser.isDel !== 1" @click="setStatus(rightClickUser)" >
@@ -384,6 +403,7 @@ import {
   userSetPwd,
   userSetStatus,
   userSetType,
+  userSetAccountCount,
   userAdd,
   userRestSendCount,
   userRestore,
@@ -480,12 +500,14 @@ const userForm = reactive({
   password: null,
   type: -1,
   userId: 0,
+  accountLimit: 0,
 })
 
 const showAdd = ref(false)
 const accountShow = ref(false)
 const addLoading = ref(false);
 const setTypeShow = ref(false)
+const setAccountCountShow = ref(false)
 const setPwdShow = ref(false)
 const pagerCount = ref(10)
 const settingLoading = ref(false)
@@ -652,19 +674,19 @@ function formatterSend(e) {
 
 function formatterAccount(e) {
 
+  let count;
+
   if (filterItem.account.length === 2) {
-    return e.accountCount + e.delAccountCount
-  }
-
-  if (filterItem.account.includes('normal')) {
-    return e.accountCount
-  }
-
-  if (filterItem.account.includes('del')) {
+    count = e.accountCount + e.delAccountCount
+  } else if (filterItem.account.includes('normal')) {
+    count = e.accountCount
+  } else if (filterItem.account.includes('del')) {
     return e.delAccountCount
+  } else {
+    count = 0
   }
 
-  return 0
+  return e.type !== 0 && e.accountLimit > 0 ? `${count} / ${e.accountLimit}` : count
 }
 
 function formatterReceive(e) {
@@ -936,10 +958,28 @@ function setType() {
   })
 }
 
+function setAccountCount() {
+  if (settingLoading.value) return
+  settingLoading.value = true
+  userSetAccountCount({accountCount: userForm.accountLimit, userId: userForm.userId}).then(() => {
+    chooseUser.accountLimit = userForm.accountLimit
+    setAccountCountShow.value = false
+    ElMessage({
+      message: t('saveSuccessMsg'),
+      type: "success",
+      plain: true
+    })
+
+  }).finally(() => {
+    settingLoading.value = false
+  })
+}
+
 
 function resetUserForm() {
   userForm.password = null
   userForm.userId = 0
+  userForm.accountLimit = 0
 }
 
 function search() {
@@ -987,6 +1027,14 @@ function openSetType(user) {
   userForm.userId = user.userId
   userForm.type = user.type
   setTypeShow.value = true
+}
+
+function openSetAccountCount(user) {
+  chooseUser = user
+  userForm.userId = user.userId
+  userForm.type = user.type
+  userForm.accountLimit = user.accountLimit || 0
+  setAccountCountShow.value = true
 }
 
 function openSetPwd(user) {

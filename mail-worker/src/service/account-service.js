@@ -70,9 +70,12 @@ const accountService = {
 
 		if (userRow.email !== c.env.admin) {
 
-			if (roleRow.accountCount > 0) {
+			// 用户级邮箱上限优先，其次分组(角色)级，0 或空=不限制
+			const accountLimit = userRow.accountCount > 0 ? userRow.accountCount : roleRow.accountCount;
+
+			if (accountLimit > 0) {
 				const userAccountCount = await accountService.countUserAccount(c, userId)
-				if(userAccountCount >= roleRow.accountCount) throw new BizError(t('accountLimit'), 403);
+				if(userAccountCount >= accountLimit) throw new BizError(t('accountLimit'), 403);
 			}
 
 			if(!roleService.hasAvailDomainPerm(roleRow.availDomain, email)) {

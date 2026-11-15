@@ -17,6 +17,10 @@ export function userSetType(params) {
     return http.put('/user/setType', params)
 }
 
+export function userSetAccountCount(params) {
+    return http.put('/user/setAccountCount', params)
+}
+
 
 export function userDelete(userIds) {
     return http.delete('/user/delete', {params:{userIds: userIds + ''}})

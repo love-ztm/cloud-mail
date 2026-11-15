@@ -390,6 +390,9 @@ const en = {
     clientId: 'Client ID',
     clientSecret: 'Client Secret',
     notOwner: 'Base email does not belong to you',
+    setUserAccountLimit: 'Set mailbox limit',
+    accountLimitTip: '0 means follow the group setting; otherwise this value becomes the mailbox limit for this user',
+    accountLimit: 'Mailbox limit reached',
 }
 
 export default en

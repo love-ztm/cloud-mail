@@ -390,5 +390,8 @@ const zh = {
     clientId: '客户端 ID',
     clientSecret: '客户端密钥',
     notOwner: '基础邮箱不属于您',
+    setUserAccountLimit: '设置邮箱上限',
+    accountLimitTip: '0 表示跟随分组设置，设置后以该数值为该用户的邮箱数量上限',
+    accountLimit: '添加邮箱数量到达限制',
 }
 export default zh

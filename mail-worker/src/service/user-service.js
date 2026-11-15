@@ -47,6 +47,11 @@ const userService = {
 		user.role = roleRow;
 		user.type = userRow.type;
 
+		// 用户级邮箱上限覆盖分组设置
+		if (c.env.admin !== userRow.email && roleRow && userRow.accountCount > 0) {
+			user.role = { ...roleRow, accountCount: userRow.accountCount };
+		}
+
 		if (c.env.admin === userRow.email) {
 			user.role = constant.ADMIN_ROLE
 			user.type = 0;
@@ -208,6 +213,7 @@ const userService = {
 
 			user.receiveEmailCount = receiveMap[userId] || 0;
 			user.sendEmailCount = sendMap[userId] || 0;
+			user.accountLimit = user.accountCount || 0;
 			user.accountCount = accountMap[userId] || 0;
 
 			user.delReceiveEmailCount = delReceiveMap[userId] || 0;
@@ -300,6 +306,24 @@ const userService = {
 		await orm(c)
 			.update(user)
 			.set({ type })
+			.where(eq(user.userId, userId))
+			.run();
+
+	},
+
+	async setAccountCount(c, params) {
+
+		const { userId } = params;
+
+		let accountCount = Number(params.accountCount);
+
+		if (isNaN(accountCount) || accountCount < 0) {
+			accountCount = 0;
+		}
+
+		await orm(c)
+			.update(user)
+			.set({ accountCount: Math.floor(accountCount) })
 			.where(eq(user.userId, userId))
 			.run();
 

@@ -372,6 +372,16 @@ function changeAccount(account) {
 }
 
 function add() {
+  // 前端预检邮箱数量上限（用户级/分组级，0=不限制），后端仍是权威校验
+  const accountLimit = userStore.user.role?.accountCount || 0
+  if (accountLimit > 0 && accounts.length >= accountLimit) {
+    ElMessage({
+      message: t('accountLimit'),
+      type: 'error',
+      plain: true,
+    })
+    return
+  }
   addForm.suffix = addForm.suffix || settingStore.domainList[0]
   showAdd.value = true
   setTimeout(() => {
